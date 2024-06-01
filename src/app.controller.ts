@@ -1,65 +1,68 @@
 import { Controller, Get, Post, Body, Param, Patch, Delete, ParseIntPipe } from '@nestjs/common';
 import { AppService } from './app.service';
-import { PrismaService } from './database/prisma.service';
 import { TarefasBody } from './dtos/create-tasks-body';
-import { Tarefa } from '@prisma/client';
+import { Tarefa, Categoria } from '@prisma/client';
 
-@Controller('tarefa')
+@Controller()
 export class AppController {
-  constructor(private readonly tarefaService: AppService) {}
+  constructor(private readonly appService: AppService) {}
 
-  @Post()
-  async createTarefa(
-    @Body('tag') tag: string,
-    @Body('descricao') descricao: string,
-  ): Promise<Tarefa> {
-    return this.tarefaService.createTarefa(tag, descricao);
+  @Post('tarefa')
+  async createTarefa(@Body() tarefasBody: TarefasBody): Promise<Tarefa> {
+    const {descricao, categoriaId } = tarefasBody;
+    return this.appService.createTarefa(descricao, categoriaId);
   }
 
-  @Get()
+  @Get('tarefa')
   async getTarefas(): Promise<Tarefa[]> {
-    return this.tarefaService.getTarefas();
+    return this.appService.getTarefas();
   }
 
-  @Get(':id')
+  @Get('tarefa/:id')
   async getTarefaById(@Param('id', ParseIntPipe) id: number): Promise<Tarefa> {
-    return this.tarefaService.getTarefaById(id);
+    return this.appService.getTarefaById(id);
   }
 
-  @Patch(':id')
+  @Patch('tarefa/:id')
   async updateTarefa(
     @Param('id', ParseIntPipe) id: number,
-    @Body('tag') tag?: string,
     @Body('descricao') descricao?: string,
     @Body('foiFeita') foiFeita?: boolean,
+    @Body('categoriaId') categoriaId?: number,
   ): Promise<Tarefa> {
-    return this.tarefaService.updateTarefa(id, { tag, descricao, foiFeita });
+    return this.appService.updateTarefa(id, { descricao, foiFeita, categoriaId });
   }
 
-  @Delete(':id')
+  @Delete('tarefa/:id')
   async deleteTarefa(@Param('id', ParseIntPipe) id: number): Promise<Tarefa> {
-    return this.tarefaService.deleteTarefa(id);
+    return this.appService.deleteTarefa(id);
+  }
+
+  @Post('categoria')
+  async createCategoria(@Body('nome') nome: string): Promise<Categoria> {
+    return this.appService.createCategoria(nome);
+  }
+
+  @Get('categoria')
+  async getCategorias(): Promise<Categoria[]> {
+    return this.appService.getCategorias();
+  }
+
+  @Get('categoria/:id')
+  async getCategoriaById(@Param('id', ParseIntPipe) id: number): Promise<Categoria> {
+    return this.appService.getCategoriaById(id);
+  }
+
+  @Patch('categoria/:id')
+  async updateCategoria(
+    @Param('id', ParseIntPipe) id: number,
+    @Body('nome') nome: string,
+  ): Promise<Categoria> {
+    return this.appService.updateCategoria(id, nome);
+  }
+
+  @Delete('categoria/:id')
+  async deleteCategoria(@Param('id', ParseIntPipe) id: number): Promise<Categoria> {
+    return this.appService.deleteCategoria(id);
   }
 }
-/* @Controller()
-export class AppController {
-  constructor(private prisma: PrismaService,
-  ) {}
-
-  @Get()
-  async getHello(@Body() body: TarefasBody) {
-    const { tag, descricao } = body;
-
-    const tarefa = await this.prisma.tarefa.create({
-      data: {
-        tag,
-        descricao,
-        foiFeita: false
-      },
-    });
-    
-    return {
-      tarefa,
-    }
-  };
-} */

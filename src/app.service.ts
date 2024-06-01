@@ -1,17 +1,26 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from './database/prisma.service';
-import { Tarefa } from '@prisma/client';
+import { Tarefa, Categoria } from '@prisma/client';
 
 @Injectable()
 export class AppService {
   constructor(private prisma: PrismaService) {}
 
-  async createTarefa(tag: string, descricao: string,): Promise<Tarefa> {
+  async createTarefa(descricao: string, categoriaId: number): Promise<Tarefa> {
+    // Verifica se o categoriaId fornecido é válido
+    const categoriaExists = await this.prisma.categoria.findUnique({
+      where: { id: categoriaId },
+    });
+    if (!categoriaExists) {
+      throw new NotFoundException('Categoria não encontrada');
+    }
+
+    // Cria a tarefa com o categoriaId fornecido
     return this.prisma.tarefa.create({
       data: {
-        tag,
         descricao,
         foiFeita: false,
+        categoriaId,
       },
     });
   }
@@ -26,7 +35,18 @@ export class AppService {
     });
   }
 
-  async updateTarefa(id: number, data: { tag?: string, descricao?: string, foiFeita?: boolean }): Promise<Tarefa> {
+  async updateTarefa(id: number, data: { descricao?: string, foiFeita?: boolean, categoriaId?: number }): Promise<Tarefa> {
+    // Verifica se o categoriaId fornecido é válido
+    if (data.categoriaId) {
+      const categoriaExists = await this.prisma.categoria.findUnique({
+        where: { id: data.categoriaId },
+      });
+      if (!categoriaExists) {
+        throw new NotFoundException('Categoria não encontrada');
+      }
+    }
+
+    // Atualiza a tarefa com os dados fornecidos
     return this.prisma.tarefa.update({
       where: { id },
       data,
@@ -38,11 +58,38 @@ export class AppService {
       where: { id },
     });
   }
-}
 
-/* @Injectable()
-export class AppService {
-  getHello(): string {
-    return 'Hello World!';
+  async createCategoria(nome: string): Promise<Categoria> {
+    return this.prisma.categoria.create({
+      data: {
+        nome,
+      },
+    });
   }
-} */
+
+  async getCategorias(): Promise<Categoria[]> {
+    return this.prisma.categoria.findMany();
+  }
+
+  async getCategoriaById(id: number): Promise<Categoria> {
+    return this.prisma.categoria.findUnique({
+      where: { id },
+      include: {
+        tarefas: true,
+      },
+    });
+  }
+
+  async updateCategoria(id: number, nome: string): Promise<Categoria> {
+    return this.prisma.categoria.update({
+      where: { id },
+      data: { nome },
+    });
+  }
+
+  async deleteCategoria(id: number): Promise<Categoria> {
+    return this.prisma.categoria.delete({
+      where: { id },
+    });
+  }
+}
