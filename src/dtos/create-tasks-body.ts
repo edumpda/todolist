@@ -6,8 +6,5 @@ export class TarefasBody {
     })
     descricao: string;
 
-    @IsNotEmpty({
-        message: "O campo de 'categoriaId' não pode ser vazio",
-    })
     categoriaId: number;
 }

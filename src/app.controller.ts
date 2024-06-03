@@ -13,6 +13,16 @@ export class AppController {
     return this.appService.createTarefa(descricao, categoriaId);
   }
 
+  @Get('tarefa/completas')
+  async getTarefasCompletas(): Promise<Tarefa[]> {
+    return this.appService.getTarefasCompletas();
+  }
+  
+  @Get('tarefa/ativas')
+  async getTarefasAtivas(): Promise<Tarefa[]> {
+    return this.appService.getTarefasAtivas();
+  }
+    
   @Get('tarefa')
   async getTarefas(): Promise<Tarefa[]> {
     return this.appService.getTarefas();
@@ -33,6 +43,11 @@ export class AppController {
     return this.appService.updateTarefa(id, { descricao, foiFeita, categoriaId });
   }
 
+  @Delete('tarefa/completas')
+  async deleteTarefasCompletas(): Promise<Tarefa[]> {
+    return this.appService.deleteTarefasCompletas();
+  }
+
   @Delete('tarefa/:id')
   async deleteTarefa(@Param('id', ParseIntPipe) id: number): Promise<Tarefa> {
     return this.appService.deleteTarefa(id);
@@ -51,6 +66,11 @@ export class AppController {
   @Get('categoria/:id')
   async getCategoriaById(@Param('id', ParseIntPipe) id: number): Promise<Categoria> {
     return this.appService.getCategoriaById(id);
+  }
+
+  @Get('tarefa/categoria/:categoriaId')
+  async getTarefasPorCategoria(@Param('categoriaId', ParseIntPipe) categoriaId: number): Promise<Tarefa[]> {
+    return this.appService.getTarefasPorCategoria(categoriaId);
   }
 
   @Patch('categoria/:id')

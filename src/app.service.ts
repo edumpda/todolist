@@ -35,6 +35,14 @@ export class AppService {
     });
   }
 
+  async getTarefasCompletas(): Promise<Tarefa[]> {
+    return this.prisma.tarefa.findMany({ where: { foiFeita: true } });
+  }
+  
+  async getTarefasAtivas(): Promise<Tarefa[]> {
+    return this.prisma.tarefa.findMany({ where: { foiFeita: false } });
+  }
+
   async updateTarefa(id: number, data: { descricao?: string, foiFeita?: boolean, categoriaId?: number }): Promise<Tarefa> {
     // Verifica se o categoriaId fornecido é válido
     if (data.categoriaId) {
@@ -59,6 +67,23 @@ export class AppService {
     });
   }
 
+
+  async deleteTarefasCompletas(): Promise<Tarefa[]> {
+    const tarefasCompletas = await this.prisma.tarefa.findMany({
+      where: { foiFeita: true },
+    });
+  
+    const tarefasDeletadas = await Promise.all(
+      tarefasCompletas.map(async (tarefa) => {
+        return this.prisma.tarefa.delete({
+          where: { id: tarefa.id },
+        });
+      }),
+    );
+  
+    return tarefasDeletadas;
+  }
+
   async createCategoria(nome: string): Promise<Categoria> {
     return this.prisma.categoria.create({
       data: {
@@ -77,6 +102,12 @@ export class AppService {
       include: {
         tarefas: true,
       },
+    });
+  }
+
+  async getTarefasPorCategoria(categoriaId: number): Promise<Tarefa[]> {
+    return this.prisma.tarefa.findMany({
+        where: { categoriaId },
     });
   }
 
